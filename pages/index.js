@@ -1,23 +1,40 @@
-import Head from 'next/head'
-import Header from '@components/Header'
-import Footer from '@components/Footer'
+import Layout from "@components/Layout";
+import Link from "next/link";
 
-export default function Home() {
+const Home = ({ pokemon }) => {
   return (
-    <div className="container">
-      <Head>
-        <title>Next.js Starter!</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <Layout title="NextJS PokeDex">
+      <h1 className="text-4xl mb-8 text-center">NextJS Pokedex</h1>
+      <ul>
+        {pokemon.map((item, i) => (
+          <li key={i}>
+            <Link href={`/pokemon/${i + 1}`}>
+              <a className="border p-4 border-grey my-2 hover:shadow-md capitalize flex items-center text-lg bg-gray-200 rounded-md">
+                <img src={item.image} alt={item.name}  className="w-20 h-20 mr-3"/>
+                <span className="mr-2 font-bold">{i + 1}.</span>
+                {item.name}
+              </a>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </Layout>
+  );
+};
 
-      <main>
-        <Header title="Welcome to my app!" />
-        <p className="description">
-          Get started by editing <code>pages/index.js</code>
-        </p>
-      </main>
-
-      <Footer />
-    </div>
-  )
-}
+export const getStaticProps = async () => {
+  const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=50");
+  const { results } = await res.json();
+  const pokemon = results.map((pokeman, index) => {
+    const paddedId = ("00" + (index + 1)).slice(-3);
+    const image = `https://assets.pokemon.com/assets/cms2/img/pokedex/detail/${paddedId}.png`;
+    return {
+      ...pokeman,
+      image,
+    };
+  });
+  return {
+    props: { pokemon },
+  };
+};
+export default Home;
